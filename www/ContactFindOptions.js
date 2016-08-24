@@ -24,15 +24,17 @@
  * @constructor
  * @param filter used to match contacts against
  * @param multiple boolean used to determine if more than one contact should be returned
- * @param desiredFields 
+ * @param desiredFields
  * @param hasPhoneNumber boolean used to filter the search and only return contacts that have a phone number informed
+ * @param inDefaultDirectory boolean used to filter the search and only return contacts in the default directory
  */
 
-var ContactFindOptions = function(filter, multiple, desiredFields, hasPhoneNumber) {
+var ContactFindOptions = function(filter, multiple, desiredFields, hasPhoneNumber, inDefaultDirectory) {
     this.filter = filter || '';
     this.multiple = (typeof multiple != 'undefined' ? multiple : false);
     this.desiredFields = typeof desiredFields != 'undefined' ? desiredFields : [];
     this.hasPhoneNumber = typeof hasPhoneNumber != 'undefined' ? hasPhoneNumber : false;
+    this.inDefaultDirectory = typeof inDefaultDirectory != 'undefined' ? inDefaultDirectory : false;
 };
 
 module.exports = ContactFindOptions;
