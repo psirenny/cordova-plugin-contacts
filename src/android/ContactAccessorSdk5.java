@@ -149,6 +149,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         boolean multiple = true;
         boolean hasPhoneNumber = false;
         boolean inDefaultDirectory = false;
+        boolean inVisibleGroup = false;
 
         if (options != null) {
             searchTerm = options.optString("filter");
@@ -180,6 +181,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             } catch (JSONException e) {
                 // inDefaultDirectory was not specified so we assume the default is false.
             }
+
+            try {
+                inVisibleGroup = options.getBoolean("inVisibleGroup");
+            } catch (JSONException e) {
+                // inVisibleGroup was not specified so we assume the default is false.
+            }
         }
         else {
             searchTerm = "%";
@@ -189,7 +196,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         HashMap<String, Boolean> populate = buildPopulationSet(options);
 
         // Build the ugly where clause and where arguments for one big query.
-        WhereOptions whereOptions = buildWhereClause(fields, searchTerm, hasPhoneNumber, inDefaultDirectory);
+        WhereOptions whereOptions = buildWhereClause(fields, searchTerm, hasPhoneNumber, inDefaultDirectory, inVisibleGroup);
 
         // Get all the id's where the search term matches the fields passed in.
         Cursor idCursor = mApp.getActivity().getContentResolver().query(ContactsContract.Data.CONTENT_URI,
@@ -210,7 +217,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         idCursor.close();
 
         // Build a query that only looks at ids
-        WhereOptions idOptions = buildIdClause(contactIds, searchTerm, hasPhoneNumber, inDefaultDirectory);
+        WhereOptions idOptions = buildIdClause(contactIds, searchTerm, hasPhoneNumber, inDefaultDirectory, inVisibleGroup);
 
         // Determine which columns we should be fetching.
         HashSet<String> columnsToFetch = new HashSet<String>();
@@ -495,12 +502,12 @@ public class ContactAccessorSdk5 extends ContactAccessor {
      * @param searchTerm what to search for
      * @return an object containing the selection and selection args
      */
-    private WhereOptions buildIdClause(Set<String> contactIds, String searchTerm, boolean hasPhoneNumber, boolean inDefaultDirectory) {
+    private WhereOptions buildIdClause(Set<String> contactIds, String searchTerm, boolean hasPhoneNumber, boolean inDefaultDirectory, boolean inVisibleGroup) {
         WhereOptions options = new WhereOptions();
 
         // If the user is searching for every contact then short circuit the method
         // and return a shorter where clause to be searched.
-        if (searchTerm.equals("%") && !hasPhoneNumber && !inDefaultDirectory) {
+        if (searchTerm.equals("%") && !hasPhoneNumber && !inDefaultDirectory && !inVisibleGroup) {
             options.setWhere("(" + ContactsContract.Data.CONTACT_ID + " LIKE ? )");
             options.setWhereArgs(new String[] { searchTerm });
             return options;
@@ -574,7 +581,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
    * @param searchTerm the string to search for
    * @return an object containing the selection and selection args
    */
-  private WhereOptions buildWhereClause(JSONArray fields, String searchTerm, boolean hasPhoneNumber, boolean inDefaultDirectory) {
+  private WhereOptions buildWhereClause(JSONArray fields, String searchTerm, boolean hasPhoneNumber, boolean inDefaultDirectory, boolean inVisibleGroup) {
 
     ArrayList<String> where = new ArrayList<String>();
     ArrayList<String> whereArgs = new ArrayList<String>();
@@ -586,7 +593,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
          */
         if (isWildCardSearch(fields)) {
             // Get all contacts with all properties
-            if ("%".equals(searchTerm) && !hasPhoneNumber && !inDefaultDirectory) {
+            if ("%".equals(searchTerm) && !hasPhoneNumber && !inDefaultDirectory && !inVisibleGroup) {
                 options.setWhere("(" + ContactsContract.Contacts.DISPLAY_NAME + " LIKE ? )");
                 options.setWhereArgs(new String[] { searchTerm });
                 return options;
@@ -636,7 +643,7 @@ public class ContactAccessorSdk5 extends ContactAccessor {
         /*
          * Special case for when the user wants all the contacts but
          */
-        if ("%".equals(searchTerm) && !hasPhoneNumber && !inDefaultDirectory) {
+        if ("%".equals(searchTerm) && !hasPhoneNumber && !inDefaultDirectory && !inVisibleGroup) {
             options.setWhere("(" + ContactsContract.Contacts.DISPLAY_NAME + " LIKE ? )");
             options.setWhereArgs(new String[] { searchTerm });
             return options;
@@ -748,6 +755,16 @@ public class ContactAccessorSdk5 extends ContactAccessor {
             }
 
             selection.append("(" + ContactsContract.Contacts.IN_DEFAULT_DIRECTORY + " = ?)");
+            whereArgs.add("1");
+        }
+
+        if (inVisibleGroup) {
+            if (where.size() > 0) {
+                selection.insert(0, "(");
+                selection.append(") AND ");
+            }
+
+            selection.append("(" + ContactsContract.Contacts.IN_VISIBLE_GROUP + " = ?)");
             whereArgs.add("1");
         }
 

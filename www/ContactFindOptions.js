@@ -27,14 +27,16 @@
  * @param desiredFields
  * @param hasPhoneNumber boolean used to filter the search and only return contacts that have a phone number informed
  * @param inDefaultDirectory boolean used to filter the search and only return contacts in the default directory
+ * @param inVisibleGroup boolean used to filter the search and only return contacts in the visible group
  */
 
-var ContactFindOptions = function(filter, multiple, desiredFields, hasPhoneNumber, inDefaultDirectory) {
+var ContactFindOptions = function(filter, multiple, desiredFields, hasPhoneNumber, inDefaultDirectory, inVisibleGroup) {
     this.filter = filter || '';
     this.multiple = (typeof multiple != 'undefined' ? multiple : false);
     this.desiredFields = typeof desiredFields != 'undefined' ? desiredFields : [];
     this.hasPhoneNumber = typeof hasPhoneNumber != 'undefined' ? hasPhoneNumber : false;
     this.inDefaultDirectory = typeof inDefaultDirectory != 'undefined' ? inDefaultDirectory : false;
+    this.inVisibleGroup = typeof inVisibleGroup != 'undefined' ? inVisibleGroup : false;
 };
 
 module.exports = ContactFindOptions;

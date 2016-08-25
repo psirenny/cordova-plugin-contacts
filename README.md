@@ -180,7 +180,10 @@ Supported values for both __contactFields__ and __contactFindOptions.desiredFiel
     - __hasPhoneNumber__(Android only): Filters the search to only return contacts with a phone number informed. _(Boolean)_ (Default: `false`)
 
     - __inDefaultDirectory__(Android only): Filters the search to only return contacts within
-    the default directory. _(Boolean)_ (Default: `false`)
+    the default directory. Requires Android v5.0.0 or greater. _(Boolean)_ (Default: `false`)
+
+    - __inVisibleGroup__(Android only): Filters the search to only return contacts within
+    the visible group. The `inDefaultDirectory` flag is preferable on Android v5.0.0 and greater. _(Boolean)_ (Default: `false`)
 
 ### Supported Platforms
 
